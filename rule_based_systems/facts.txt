@@ -1,0 +1,5 @@
+summer = 1
+windy = 1
+temperature = 1
+last_rain = 10
+cloudy = 0
