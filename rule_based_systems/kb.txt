@@ -1,11 +1,9 @@
-# DIS = Drip Irigation System = Aspersator
-
-IF temperature > 40 THEN dis 30
+IF temperature > 40 THEN dis = 30
 IF sky = clear THEN humidity < 50
-IF temperature > 25 AND humidity < 50 THEN dis 20
-IF summer THEN temperature > 20
-IF winter THEN temperature < 5
-IF cloudy THEN humidity > 60
-IF humidity < 50 AND temperature > 15 AND temperature < 25 THEN dis 10
-IF temperature > 15 AND temperature < 25 and humidity > 50 THEN dis 3
-IF winter THEN dis 0
+IF temperature > 25 AND humidity < 50 THEN dis = 20
+IF summer = 1 THEN temperature > 20
+IF winter = 1 THEN temperature < 5
+IF cloudy = 1 THEN humidity > 60
+IF humidity < 50 AND temperature >< 15,25 THEN dis = 10
+IF temperature >< 15,25 AND humidity > 50 THEN dis = 3
+IF winter = 1 THEN dis = 0
