@@ -140,23 +140,6 @@ class InferenceEngine():
         if (self.inferences == self.max_inferences):
             raise Exception('Too many inferences!')
         for rule in self.kb.rules:
-            # @TODO Remove horrendeous debugging code later
-            '''
-            c1 = rule.concept1
-            c2name = ''
-            c2value = ''
-            c2operator = ''
-            if rule.concept2 != None:
-                c2 = rule.concept2
-                c2name = c2.name
-                c2value = c2.value
-                c2operator = c2.operator
-            print ('CHECKING RULE: ', c1.name, c1.operator, c1.value,
-                    rule.operator, c2name, c2operator, c2value,
-                    ' = ', bool(rule), ' => ',
-                    rule.then.name, rule.then.operator, rule.then.value
-            )
-            '''
             if rule:
                 self.update_fact(rule.then)
 
