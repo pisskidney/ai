@@ -3,7 +3,7 @@ IF sky = clear THEN humidity < 50
 IF temperature > 25 AND humidity < 50 THEN dis = 20
 IF summer = 1 THEN temperature > 20
 IF winter = 1 THEN temperature < 5
-IF cloudy = 1 THEN humidity > 60
+IF sky = cloudy THEN humidity > 60
 IF humidity < 50 AND temperature >< 15,25 THEN dis = 10
 IF temperature >< 15,25 AND humidity > 50 THEN dis = 3
 IF winter = 1 THEN dis = 0

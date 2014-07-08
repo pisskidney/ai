@@ -16,10 +16,10 @@ class Rule():
             raise Exception('Error')
 
     def __bool__(self):
-        if not self.concept2:
+        if self.concept2 is None:
             return bool(self.concept1)
         elif self.operator == 'OR':
-            return bool(self.concept1) or bool(self.concept1)
+            return bool(self.concept1) or bool(self.concept2)
         elif self.operator == 'AND':
             return bool(self.concept1) and bool(self.concept2)
 
@@ -28,6 +28,7 @@ class Rule():
 
 class KnowledgeBase():
     def __init__(self):
+        ''' The class that keeps track of all the rules. '''
         self.rules = list()
 
     @classmethod
@@ -36,6 +37,7 @@ class KnowledgeBase():
         new = cls()
         f = open(filename, "r")
         for line in f:
+            line = line.rstrip('\n')
             rule, then = line.split(' THEN ')
             then_name, then_operator, then_value = then.split(' ')
             then_concept = Concept(then_name, then_value, then_operator)
@@ -49,7 +51,7 @@ class KnowledgeBase():
             else:
                 _, rule_name, rule_operator, rule_value = rule.split(' ')
                 c = Concept(rule_name, rule_value, rule_operator)
-                r = Rule(c, then)
+                r = Rule(c, then_concept)
                 new.rules.append(r)
                 continue
 
@@ -81,6 +83,11 @@ class ConceptManager():
         f.close()
         return new
 
+    def print_state(self):
+        print '----' * 10
+        for _, concept in self.concepts.iteritems():
+            print concept.name, concept.operator, concept.value
+
 
 class Concept():
     def __init__(self, name, value=None, operator=None):
@@ -99,13 +106,18 @@ class Concept():
         if self.name not in cm.concepts.keys():
             return False
         else:
-            print self.operator
             if self.operator == '=':
                 return self.value == cm.concepts[self.name].value
             elif self.operator == '<':
-                return float(self.value) < float(cm.concepts[self.name].value)
-            elif self.operator == '>':
+                cmc = cm.concepts[self.name]
+                if cmc.operator == '<':
+                    return float(self.value) == float(cmc.value)
                 return float(self.value) > float(cm.concepts[self.name].value)
+            elif self.operator == '>':
+                cmc = cm.concepts[self.name]
+                if cmc.operator == '>':
+                    return float(self.value) == float(cmc.value)
+                return float(self.value) < float(cm.concepts[self.name].value)
             elif self.operator == '><':
                 l, r = self.value.split(',')
                 val = cm.concepts[self.name].value
@@ -115,15 +127,65 @@ class Concept():
     __nonzero__ = __bool__
 
 
+class InferenceEngine():
+    def __init__(self, kb, cm, goal, max_inferences=None):
+        ''' The main logic handler of the rbs. '''
+        self.kb = kb
+        self.cm = cm
+        self.goal = goal
+        self.max_inferences = max_inferences
+        self.inferences = 0
+
+    def infer(self):
+        if (self.inferences == self.max_inferences):
+            raise Exception('Too many inferences!')
+        for rule in self.kb.rules:
+            # @TODO Remove horrendeous debugging code later
+            '''
+            c1 = rule.concept1
+            c2name = ''
+            c2value = ''
+            c2operator = ''
+            if rule.concept2 != None:
+                c2 = rule.concept2
+                c2name = c2.name
+                c2value = c2.value
+                c2operator = c2.operator
+            print ('CHECKING RULE: ', c1.name, c1.operator, c1.value,
+                    rule.operator, c2name, c2operator, c2value,
+                    ' = ', bool(rule), ' => ',
+                    rule.then.name, rule.then.operator, rule.then.value
+            )
+            '''
+            if rule:
+                self.update_fact(rule.then)
+
+    def update_fact(self, fact):
+        if fact.name in self.cm.concepts.keys():
+            self.cm.concepts[fact.name].value = fact.value
+            self.cm.concepts[fact.name].operator = fact.operator
+        else:
+            self.cm.concepts[fact.name] = fact
+
+    def done(self):
+        return bool(self.goal)
+
+
 cm = ConceptManager.from_file("facts.txt")
 
 
 def main():
     kb = KnowledgeBase.from_file("kb.txt")
-    for r in kb.rules:
-        print r.concept1.name, ' ', r.concept1.operator, ' ', r.concept1.value
-        print bool(r)
-        print ''
+    goal = Concept('dis', '-1', '>')
+    ie = InferenceEngine(kb, cm, goal, max_inferences=10)
+
+    while(not ie.done()):
+        ie.infer()
+    print 'Conclusion reached!'
+    print 'Drip Irrigation System needs to run for %s %s minutes!' % (
+        cm.concepts['dis'].operator,
+        cm.concepts['dis'].value
+    )
 
 
 if __name__ == "__main__":
