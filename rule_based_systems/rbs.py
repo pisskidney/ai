@@ -22,8 +22,26 @@ class Rule():
             return bool(self.concept1) or bool(self.concept2)
         elif self.operator == 'AND':
             return bool(self.concept1) and bool(self.concept2)
-
     __nonzero__ = __bool__
+
+    def __str__(self):
+        aditional = ''
+        if self.concept2 is not None:
+            aditional = '%s %s %s %s' % (
+                self.operator,
+                self.concept2.name,
+                self.concept2.operator,
+                self.concept2.value
+            )
+        return 'From %s %s %s %s we deduce that %s %s %s.' % (
+            self.concept1.name,
+            self.concept1.operator,
+            self.concept1.value,
+            aditional,
+            self.then.name,
+            self.then.operator,
+            self.then.value,
+        )
 
 
 class KnowledgeBase():
@@ -141,7 +159,9 @@ class InferenceEngine():
             raise Exception('Too many inferences!')
         for rule in self.kb.rules:
             if rule:
+                print rule
                 self.update_fact(rule.then)
+                self.kb.rules.remove(rule)
 
     def update_fact(self, fact):
         if fact.name in self.cm.concepts.keys():
@@ -149,6 +169,7 @@ class InferenceEngine():
             self.cm.concepts[fact.name].operator = fact.operator
         else:
             self.cm.concepts[fact.name] = fact
+
 
     def done(self):
         return bool(self.goal)
