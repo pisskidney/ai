@@ -22,6 +22,8 @@ def generate(res, edges, pos, best):
             best[:] = res
         print res
         return
+    if len(set(res)) > len(set(best)):
+        return
     candidates = range(len(edges))
     no_good = []
     for i in xrange(pos):
